@@ -1,3 +1,19 @@
+// iOS 13+ / Android での重力センサーアクセス許可をリクエスト
+if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+  DeviceMotionEvent.requestPermission()
+    .then(permissionState => {
+      if (permissionState === 'granted') {
+        window.addEventListener("deviceorientation", handleOrientation);
+      } else {
+        alert("デバイスの重力センサーへのアクセスが許可されていません。設定で許可してください。");
+      }
+    })
+    .catch(console.error);
+} else {
+  // 通常のブラウザ用（アクセス許可が不要な場合）
+  window.addEventListener("deviceorientation", handleOrientation);
+}
+
 const canvas = document.getElementById("gameCanvas");
 const context = canvas.getContext("2d");
 
@@ -37,28 +53,12 @@ function draw() {
   context.fill();
 }
 
-// iOS 13+ / Android での重力センサーアクセス許可をリクエスト
-if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-  DeviceMotionEvent.requestPermission()
-    .then(permissionState => {
-      if (permissionState === 'granted') {
-        window.addEventListener("deviceorientation", handleOrientation);
-      } else {
-        alert("デバイスの重力センサーへのアクセスが許可されていません。設定で許可してください。");
-      }
-    })
-    .catch(console.error);
-} else {
-  // 通常のブラウザ用（アクセス許可が不要な場合）
-  window.addEventListener("deviceorientation", handleOrientation);
-}
-
 // デバイスの傾きに基づいて玉を動かす処理
 function handleOrientation(event) {
   const gravityX = event.gamma / 90; // 左右の傾き
   const gravityY = event.beta / 90;  // 上下の傾き
 
-  // 玉の位置を更新
+  // 玉の位置を更新（スマホの傾きに応じて移動）
   ball.x += gravityX * 2;
   ball.y += gravityY * 2;
 
