@@ -1,12 +1,13 @@
 const canvas = document.getElementById("gameCanvas");
 const context = canvas.getContext("2d");
 
-// ドーナツと玉の半径設定
+// ドーナツの設定
 const outerRadius = 150;
 const innerRadius = 100;
 const ballRadius = (outerRadius - innerRadius) / 2;
 
-// 玉の初期位置（ドーナツの内壁と外壁の間、下側に配置）
+// ドーナツの初期設定
+let donutColor = "black"; // 右後半規管が選択されたときの色（黒）
 let ball = {
   x: canvas.width / 2,
   y: canvas.height / 2 + (outerRadius + innerRadius) / 2,
@@ -16,9 +17,18 @@ let ball = {
 
 // 加速度の変数
 let aX = 0, aY = 0, aZ = 0;
-
-// データ表示要素
 const xDisplay = document.getElementById("txt");
+
+// ボタン選択で加速度センサーの許可をリクエスト
+function startWithCanal(canal) {
+  if (canal === 'left') {
+    donutColor = "white"; // 左後半規管の色（白）
+  } else {
+    donutColor = "black"; // 右後半規管の色（黒）
+  }
+
+  requestPermission();
+}
 
 // iOS 13+ 向けの許可リクエスト
 function requestPermission() {
@@ -42,7 +52,7 @@ function requestPermission() {
 function startMotionDetection() {
   window.addEventListener("devicemotion", (dat) => {
     aX = dat.accelerationIncludingGravity.x;
-    aY = dat.accelerationIncludingGravity.y;
+    aY = -dat.accelerationIncludingGravity.y; // iPhoneでのY軸を逆に
     aZ = dat.accelerationIncludingGravity.z;
   });
 
@@ -60,7 +70,6 @@ function displayData() {
 
 // 玉の位置を更新する関数
 function updateBallPosition() {
-  // 加速度に基づいて玉の位置を更新
   ball.x += aX * 2;
   ball.y += aY * 2;
 
@@ -89,7 +98,7 @@ function draw() {
   // ドーナツを描画
   context.beginPath();
   context.arc(canvas.width / 2, canvas.height / 2, (outerRadius + innerRadius) / 2, 0, Math.PI * 2);
-  context.strokeStyle = "gray";
+  context.strokeStyle = donutColor; // ドーナツの色を設定
   context.lineWidth = outerRadius - innerRadius;
   context.stroke();
 
