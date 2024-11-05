@@ -37,8 +37,24 @@ function draw() {
   context.fill();
 }
 
-// デバイスの傾きに基づいて玉をドーナツ筒内で動かす
-window.addEventListener("deviceorientation", (event) => {
+// iOS 13+ / Android での重力センサーアクセス許可をリクエスト
+if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+  DeviceMotionEvent.requestPermission()
+    .then(permissionState => {
+      if (permissionState === 'granted') {
+        window.addEventListener("deviceorientation", handleOrientation);
+      } else {
+        alert("デバイスの重力センサーへのアクセスが許可されていません。設定で許可してください。");
+      }
+    })
+    .catch(console.error);
+} else {
+  // 通常のブラウザ用（アクセス許可が不要な場合）
+  window.addEventListener("deviceorientation", handleOrientation);
+}
+
+// デバイスの傾きに基づいて玉を動かす処理
+function handleOrientation(event) {
   const gravityX = event.gamma / 90; // 左右の傾き
   const gravityY = event.beta / 90;  // 上下の傾き
 
@@ -53,7 +69,6 @@ window.addEventListener("deviceorientation", (event) => {
   const minDistance = innerRadius + ball.radius;
   const maxDistance = outerRadius - ball.radius;
 
-  // 玉がドーナツの内壁と外壁の間に収まるように調整
   if (distance < minDistance) {
     ball.x = canvas.width / 2 + (distanceX / distance) * minDistance;
     ball.y = canvas.height / 2 + (distanceY / distance) * minDistance;
@@ -63,7 +78,7 @@ window.addEventListener("deviceorientation", (event) => {
   }
 
   draw();
-});
+}
 
 // 初回描画
 draw();
