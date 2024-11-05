@@ -42,7 +42,7 @@ function requestPermission() {
 function startMotionDetection() {
   window.addEventListener("devicemotion", (dat) => {
     aX = dat.accelerationIncludingGravity.x;
-    aY = -dat.accelerationIncludingGravity.y;
+    aY = dat.accelerationIncludingGravity.y;
     aZ = dat.accelerationIncludingGravity.z;
   });
 
