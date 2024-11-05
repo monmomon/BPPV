@@ -20,9 +20,6 @@ let aX = 0, aY = 0, aZ = 0;
 // データ表示要素
 const xDisplay = document.getElementById("txt");
 
-// OSを判別し、Androidの場合には加速度の符号を逆にする
-const isAndroid = /Android/i.test(navigator.userAgent);
-
 // iOS 13+ 向けの許可リクエスト
 function requestPermission() {
   if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -44,9 +41,8 @@ function requestPermission() {
 // 加速度センサーのデータ取得を開始
 function startMotionDetection() {
   window.addEventListener("devicemotion", (dat) => {
-    // Androidの場合はxとyの符号を逆にする
-    aX = isAndroid ? -dat.accelerationIncludingGravity.x : dat.accelerationIncludingGravity.x;
-    aY = isAndroid ? -dat.accelerationIncludingGravity.y : -dat.accelerationIncludingGravity.y;
+    aX = dat.accelerationIncludingGravity.x;
+    aY = -dat.accelerationIncludingGravity.y;
     aZ = dat.accelerationIncludingGravity.z;
   });
 
