@@ -1,4 +1,4 @@
-// iOS 13+ / Android での重力センサーアクセス許可をリクエスト
+// iOS用アクセス許可リクエスト
 if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
   DeviceMotionEvent.requestPermission()
     .then(permissionState => {
@@ -8,10 +8,14 @@ if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.request
         alert("デバイスの重力センサーへのアクセスが許可されていません。設定で許可してください。");
       }
     })
-    .catch(console.error);
-} else {
-  // 通常のブラウザ用（アクセス許可が不要な場合）
+    .catch(error => {
+      console.error("iOSでの許可リクエストエラー:", error);
+    });
+} else if (typeof DeviceOrientationEvent !== 'undefined') {
+  // Android用（許可が不要な場合がほとんど）
   window.addEventListener("deviceorientation", handleOrientation);
+} else {
+  alert("お使いのデバイスは重力センサーをサポートしていない可能性があります。");
 }
 
 const canvas = document.getElementById("gameCanvas");
@@ -59,6 +63,12 @@ function draw() {
 
 // デバイスの傾きに基づいて玉を動かす処理
 function handleOrientation(event) {
+  // 重力センサーの値が取得できているか確認
+  if (event.gamma === null || event.beta === null) {
+    alert("重力センサーのデータが取得できません。ブラウザ設定やデバイスのセンサー許可を確認してください。");
+    return;
+  }
+
   const gravityX = event.gamma / 90; // 左右の傾き
   const gravityY = event.beta / 90;  // 上下の傾き
 
