@@ -1,12 +1,12 @@
 const canvas = document.getElementById("gameCanvas");
 const context = canvas.getContext("2d");
 
-// キャンバスサイズとドーナツの内側と外側の半径を設定
-const outerRadius = 150; // ドーナツの外側の半径
-const innerRadius = 100; // ドーナツの内側の半径
-const ballRadius = (outerRadius - innerRadius) / 2; // ドーナツの幅に合わせた玉の半径
+// ドーナツと玉の半径設定
+const outerRadius = 150;
+const innerRadius = 100;
+const ballRadius = (outerRadius - innerRadius) / 2;
 
-// 玉の初期位置（ドーナツの内壁と外壁の間）
+// 玉の初期位置（ドーナツの内壁と外壁の間、下側に配置）
 let ball = {
   x: canvas.width / 2,
   y: canvas.height / 2 + (outerRadius + innerRadius) / 2,
@@ -14,25 +14,55 @@ let ball = {
   color: "blue"
 };
 
-// 加速度センサーの値を表示する要素を取得
-const xDisplay = document.getElementById("xValue");
-const yDisplay = document.getElementById("yValue");
-const zDisplay = document.getElementById("zValue");
+// 加速度の変数
+let aX = 0, aY = 0, aZ = 0;
 
-// 加速度データを使って玉を動かす
-window.addEventListener("devicemotion", (event) => {
-  const accX = event.accelerationIncludingGravity.x; // x軸の加速度
-  const accY = event.accelerationIncludingGravity.y; // y軸の加速度
-  const accZ = event.accelerationIncludingGravity.z; // z軸の加速度
+// データ表示要素
+const xDisplay = document.getElementById("txt");
 
-  // データを画面に表示
-  xDisplay.textContent = accX.toFixed(2);
-  yDisplay.textContent = accY.toFixed(2);
-  zDisplay.textContent = accZ.toFixed(2);
+// iOS 13+ 向けの許可リクエスト
+function requestPermission() {
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission()
+      .then(permissionState => {
+        if (permissionState === 'granted') {
+          startMotionDetection();
+        } else {
+          alert("デバイスの重力センサーへのアクセスが許可されていません。設定で許可してください。");
+        }
+      })
+      .catch(console.error);
+  } else {
+    // Androidなど許可が不要な環境の場合、そのまま開始
+    startMotionDetection();
+  }
+}
 
-  // 玉の位置を更新（加速度に基づいて移動）
-  ball.x += accX * 2;
-  ball.y += accY * 2;
+// 加速度センサーのデータ取得を開始
+function startMotionDetection() {
+  window.addEventListener("devicemotion", (dat) => {
+    aX = dat.accelerationIncludingGravity.x;
+    aY = dat.accelerationIncludingGravity.y;
+    aZ = dat.accelerationIncludingGravity.z;
+  });
+
+  // 33msごとに玉の位置を更新し、データを表示
+  setInterval(() => {
+    updateBallPosition();
+    displayData();
+  }, 33);
+}
+
+// データを表示する関数
+function displayData() {
+  xDisplay.innerHTML = "x: " + aX.toFixed(2) + "<br>" + "y: " + aY.toFixed(2) + "<br>" + "z: " + aZ.toFixed(2);
+}
+
+// 玉の位置を更新する関数
+function updateBallPosition() {
+  // 加速度に基づいて玉の位置を更新
+  ball.x += aX * 2;
+  ball.y += aY * 2;
 
   // 玉がドーナツの内壁と外壁の間に収まるように制限
   const distanceX = ball.x - canvas.width / 2;
@@ -50,9 +80,9 @@ window.addEventListener("devicemotion", (event) => {
   }
 
   draw();
-});
+}
 
-// 玉とドーナツの描画
+// ドーナツと玉を描画する関数
 function draw() {
   context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -60,7 +90,7 @@ function draw() {
   context.beginPath();
   context.arc(canvas.width / 2, canvas.height / 2, (outerRadius + innerRadius) / 2, 0, Math.PI * 2);
   context.strokeStyle = "gray";
-  context.lineWidth = outerRadius - innerRadius; // ドーナツの幅
+  context.lineWidth = outerRadius - innerRadius;
   context.stroke();
 
   // 玉を描画

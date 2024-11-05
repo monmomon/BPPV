@@ -2,55 +2,16 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>加速度の値を得る</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>加速度で玉を動かす</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <div id="txt">ここにデータを表示</div> <!-- データを表示するdiv要素 -->
-  <button onclick="requestPermission()">加速度センサーを開始</button>
-
-  <script>
-    var aX = 0, aY = 0, aZ = 0; // 加速度の値を入れる変数
-
-    // iOS 13+ 向けの許可リクエスト
-    function requestPermission() {
-      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        DeviceMotionEvent.requestPermission()
-          .then(permissionState => {
-            if (permissionState === 'granted') {
-              startMotionDetection();
-            } else {
-              alert("デバイスの重力センサーへのアクセスが許可されていません。設定で許可してください。");
-            }
-          })
-          .catch(console.error);
-      } else {
-        // Androidなど許可が不要な環境の場合、そのまま開始
-        startMotionDetection();
-      }
-    }
-
-    // 加速度センサーのデータ取得を開始
-    function startMotionDetection() {
-      window.addEventListener("devicemotion", (dat) => {
-        aX = dat.accelerationIncludingGravity.x;
-        aY = dat.accelerationIncludingGravity.y;
-        aZ = dat.accelerationIncludingGravity.z;
-      });
-
-      window.setInterval(() => {
-        displayData();
-      }, 33);
-    }
-
-    // データを表示する関数
-    function displayData() {
-      var txt = document.getElementById("txt");
-      txt.innerHTML = "x: " + aX.toFixed(2) + "<br>"
-                    + "y: " + aY.toFixed(2) + "<br>"
-                    + "z: " + aZ.toFixed(2);
-    }
-  </script>
+  <div class="container">
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="txt">ここにデータを表示</div>
+    <button onclick="requestPermission()">加速度センサーを開始</button>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>
