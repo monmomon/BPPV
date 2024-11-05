@@ -36,6 +36,10 @@ let ball = {
   color: "blue"
 };
 
+// 重力センサーの値を表示する要素を取得
+const gammaDisplay = document.getElementById("gammaValue");
+const betaDisplay = document.getElementById("betaValue");
+
 function draw() {
   context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -57,6 +61,10 @@ function draw() {
 function handleOrientation(event) {
   const gravityX = event.gamma / 90; // 左右の傾き
   const gravityY = event.beta / 90;  // 上下の傾き
+
+  // 重力センサーの値をWebページに表示
+  gammaDisplay.textContent = event.gamma.toFixed(2);
+  betaDisplay.textContent = event.beta.toFixed(2);
 
   // 玉の位置を更新（スマホの傾きに応じて移動）
   ball.x += gravityX * 2;
