@@ -53,3 +53,5 @@ window.addEventListener("deviceorientation", (event) => {
 
 // 初回描画
 draw();
+
+console.log("JavaScriptが読み込まれました");
