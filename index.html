@@ -5,31 +5,51 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>加速度の値を得る</title>
 </head>
- 
+
 <body>
   <div id="txt">ここにデータを表示</div> <!-- データを表示するdiv要素 -->
+  <button onclick="requestPermission()">加速度センサーを開始</button>
 
   <script>
-    var aX = 0, aY = 0, aZ = 0; // 加速度の値を入れる変数を3個用意
+    var aX = 0, aY = 0, aZ = 0; // 加速度の値を入れる変数
 
-    // 加速度センサの値が変化したら実行される devicemotion イベント
-    window.addEventListener("devicemotion", (dat) => {
-      aX = dat.accelerationIncludingGravity.x; // x軸の重力加速度（Android と iOSでは正負が逆）
-      aY = dat.accelerationIncludingGravity.y; // y軸の重力加速度（Android と iOSでは正負が逆）
-      aZ = dat.accelerationIncludingGravity.z; // z軸の重力加速度（Android と iOSでは正負が逆）
-    });
+    // iOS 13+ 向けの許可リクエスト
+    function requestPermission() {
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              startMotionDetection();
+            } else {
+              alert("デバイスの重力センサーへのアクセスが許可されていません。設定で許可してください。");
+            }
+          })
+          .catch(console.error);
+      } else {
+        // Androidなど許可が不要な環境の場合、そのまま開始
+        startMotionDetection();
+      }
+    }
 
-    // 指定時間ごとに繰り返し実行される setInterval(実行する内容, 間隔[ms]) タイマーを設定
-    var timer = window.setInterval(() => {
-      displayData(); // displayData 関数を実行
-    }, 33); // 33msごとに（1秒間に約30回）
+    // 加速度センサーのデータ取得を開始
+    function startMotionDetection() {
+      window.addEventListener("devicemotion", (dat) => {
+        aX = dat.accelerationIncludingGravity.x;
+        aY = dat.accelerationIncludingGravity.y;
+        aZ = dat.accelerationIncludingGravity.z;
+      });
 
-    // データを表示する displayData 関数
+      window.setInterval(() => {
+        displayData();
+      }, 33);
+    }
+
+    // データを表示する関数
     function displayData() {
-      var txt = document.getElementById("txt"); // データを表示するdiv要素の取得
-      txt.innerHTML = "x: " + aX.toFixed(2) + "<br>" // x軸の値
-                    + "y: " + aY.toFixed(2) + "<br>" // y軸の値
-                    + "z: " + aZ.toFixed(2); // z軸の値
+      var txt = document.getElementById("txt");
+      txt.innerHTML = "x: " + aX.toFixed(2) + "<br>"
+                    + "y: " + aY.toFixed(2) + "<br>"
+                    + "z: " + aZ.toFixed(2);
     }
   </script>
 </body>
