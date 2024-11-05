@@ -20,6 +20,25 @@ let aX = 0, aY = 0, aZ = 0;
 // データ表示要素
 const xDisplay = document.getElementById("txt");
 
+// デバイスを特定して軸の補正をする関数
+function adjustAxes() {
+  const userAgent = navigator.userAgent.toLowerCase();
+  if (userAgent.includes("iphone") || userAgent.includes("ipad")) {
+    if (userAgent.includes("safari") && !userAgent.includes("chrome")) {
+      // iOS Safari - reverse Y-axis
+      return { x: aX, y: -aY, z: aZ };
+    } else {
+      // iOS Chrome - no adjustment needed
+      return { x: aX, y: aY, z: aZ };
+    }
+  } else if (userAgent.includes("android")) {
+    // Android Chrome - reverse both X and Y axes
+    return { x: -aX, y: -aY, z: aZ };
+  }
+  // Default case - no adjustment needed
+  return { x: aX, y: aY, z: aZ };
+}
+
 // iOS 13+ 向けの許可リクエスト
 function requestPermission() {
   if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -55,14 +74,17 @@ function startMotionDetection() {
 
 // データを表示する関数
 function displayData() {
-  xDisplay.innerHTML = "x: " + aX.toFixed(2) + "<br>" + "y: " + aY.toFixed(2) + "<br>" + "z: " + aZ.toFixed(2);
+  const adjusted = adjustAxes();
+  xDisplay.innerHTML = "x: " + adjusted.x.toFixed(2) + "<br>" + "y: " + adjusted.y.toFixed(2) + "<br>" + "z: " + adjusted.z.toFixed(2);
 }
 
 // 玉の位置を更新する関数
 function updateBallPosition() {
+  const adjusted = adjustAxes();
+
   // 加速度に基づいて玉の位置を更新
-  ball.x += aX * 2;
-  ball.y += aY * 2;
+  ball.x += adjusted.x * 2;
+  ball.y += adjusted.y * 2;
 
   // 玉がドーナツの内壁と外壁の間に収まるように制限
   const distanceX = ball.x - canvas.width / 2;
